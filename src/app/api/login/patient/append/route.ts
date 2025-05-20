@@ -6,21 +6,24 @@ const uri = process.env.MONGODB_URI!;
 const client = new MongoClient(uri);
 const dbName = "shannonsite";
 
-// Hashing utility with validation
+// Safe hash function
 function hashString(input: string | undefined): string {
   if (typeof input !== "string" || input.trim() === "") {
-    throw new Error("hashString: input must be a non-empty string");
+    throw new Error("Invalid string input for hashing");
   }
   return crypto.createHash("sha256").update(input).digest("hex");
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { patientName, dob, newEntries } = await req.json();
+    const body = await req.json();
 
-    if (!patientName || !Array.isArray(newEntries)) {
+    const { patientName, dob, newEntries } = body ?? {};
+
+    // ✅ Validate inputs
+    if (typeof patientName !== "string" || !Array.isArray(newEntries)) {
       return NextResponse.json(
-        { message: "Invalid request body" },
+        { message: "Invalid request body: patientName or newEntries missing" },
         { status: 400 }
       );
     }
@@ -54,9 +57,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: "Data appended successfully" });
   } catch (err: any) {
-    console.error("Append error:", err.message);
+    console.error("Append route error:", err.message);
     return NextResponse.json(
-      { message: "Server error during data append" },
+      { message: "Server error during append" },
       { status: 500 }
     );
   }
