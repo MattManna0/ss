@@ -1,0 +1,129 @@
+/* General container styling */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f4f4f4;
+  padding: 20px;
+}
+
+.logo {
+  margin-bottom: 20px;
+}
+
+.logo img {
+  max-width: 100%;
+  height: auto;
+  width: 60px;
+}
+
+/* Title styling */
+.heading {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Patient info section */
+.patientInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.patientInfo label {
+  font-size: 14px;
+  color: #333;
+}
+
+.patientInfo input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #333;
+  width: 200px;
+  max-width: 100%;
+}
+
+/* Table container */
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Table grid layout */
+.tableGrid {
+  display: grid;
+  grid-template-columns: repeat(
+    6,
+    minmax(100px, 1fr)
+  ); /* Ensure inputs fit within container */
+  gap: 10px;
+  align-items: center;
+}
+
+/* Table header */
+.tableHeader {
+  font-weight: bold;
+  text-align: center;
+  background-color: #2f4a65;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+/* Table row styling */
+.tableRow input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Add row button */
+.addRowButton {
+  background-color: #2f4a65;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+  align-self: center;
+}
+
+.addRowButton:hover {
+  background-color: #1b3146;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+  .tableGrid {
+    grid-template-columns: repeat(
+      2,
+      minmax(150px, 1fr)
+    ); /* Adjust for smaller screens */
+  }
+}
