@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI;
-if (!uri) {
-  throw new Error("MONGODB_URI environment variable is not defined");
-}
-
-const client = new MongoClient(uri);
+// Move the client creation inside the POST function to avoid build-time evaluation
 const dbName = "shannonsite";
 
 export async function POST(req: NextRequest) {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    console.error("MONGODB_URI environment variable is not defined");
+    return NextResponse.json(
+      { message: "Database configuration error" },
+      { status: 500 }
+    );
+  }
+
+  const client = new MongoClient(uri);
+
   try {
     const body = await req.json();
 
