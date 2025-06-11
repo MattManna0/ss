@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI!;
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  throw new Error("MONGODB_URI environment variable is not defined");
+}
+
 const client = new MongoClient(uri);
 const dbName = "shannonsite";
 
@@ -53,5 +57,7 @@ export async function POST(req: NextRequest) {
       { message: "Internal server error" },
       { status: 500 }
     );
+  } finally {
+    await client.close();
   }
 }
