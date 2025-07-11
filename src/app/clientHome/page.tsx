@@ -296,37 +296,92 @@ export default function SignatureLog() {
                 </div>
 
                 {formData.map((row, index) => (
-                    <div key={index} className={styles.tableGrid}>
-                        <input
-                            type="date"
-                            value={row.date}
-                            onChange={(e) => handleChange(index, "date", e.target.value)}
-                        />
-                        <input
-                            type="time"
-                            value={row.timeIn}
-                            onChange={(e) => handleChange(index, "timeIn", e.target.value)}
-                        />
-                        <input
-                            type="time"
-                            value={row.timeOut}
-                            onChange={(e) => handleChange(index, "timeOut", e.target.value)}
-                        />
-                        <SignatureCanvas
-                            value={row.signature}
-                            onChange={handleChange}
-                            index={index}
-                        />
-                        <input
-                            type="text"
-                            value={row.evaluation}
-                            onChange={(e) => handleChange(index, "evaluation", e.target.value)}
-                        />
-                        <input
-                            type="text"
-                            value={row.itp}
-                            onChange={(e) => handleChange(index, "itp", e.target.value)}
-                        />
+                    <div key={index}>
+                        {/* Desktop/Tablet Grid Layout */}
+                        <div className={styles.tableGrid}>
+                            <input
+                                type="date"
+                                value={row.date}
+                                onChange={(e) => handleChange(index, "date", e.target.value)}
+                            />
+                            <input
+                                type="time"
+                                value={row.timeIn}
+                                onChange={(e) => handleChange(index, "timeIn", e.target.value)}
+                            />
+                            <input
+                                type="time"
+                                value={row.timeOut}
+                                onChange={(e) => handleChange(index, "timeOut", e.target.value)}
+                            />
+                            <SignatureCanvas
+                                value={row.signature}
+                                onChange={handleChange}
+                                index={index}
+                            />
+                            <input
+                                type="text"
+                                value={row.evaluation}
+                                onChange={(e) => handleChange(index, "evaluation", e.target.value)}
+                            />
+                            <input
+                                type="text"
+                                value={row.itp}
+                                onChange={(e) => handleChange(index, "itp", e.target.value)}
+                            />
+                        </div>
+
+                        {/* Mobile Card Layout */}
+                        <div className={styles.mobileRow}>
+                            <div className={styles.mobileRowField}>
+                                <label>Date</label>
+                                <input
+                                    type="date"
+                                    value={row.date}
+                                    onChange={(e) => handleChange(index, "date", e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.mobileRowField}>
+                                <label>Time In</label>
+                                <input
+                                    type="time"
+                                    value={row.timeIn}
+                                    onChange={(e) => handleChange(index, "timeIn", e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.mobileRowField}>
+                                <label>Time Out</label>
+                                <input
+                                    type="time"
+                                    value={row.timeOut}
+                                    onChange={(e) => handleChange(index, "timeOut", e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.mobileRowField}>
+                                <label>Parent Signature</label>
+                                <SignatureCanvas
+                                    value={row.signature}
+                                    onChange={handleChange}
+                                    index={index}
+                                />
+                            </div>
+                            <div className={styles.mobileRowField}>
+                                <label>Evaluation</label>
+                                <input
+                                    type="text"
+                                    value={row.evaluation}
+                                    onChange={(e) => handleChange(index, "evaluation", e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.mobileRowField}>
+                                <label>ITP</label>
+                                <input
+                                    type="text"
+                                    value={row.itp}
+                                    onChange={(e) => handleChange(index, "itp", e.target.value)}
+                                />
+                            </div>
+                        </div>
                     </div>
                 ))}
 

@@ -55,6 +55,21 @@
   max-width: 100%;
 }
 
+.patientInfo button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2f4a65;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.patientInfo button:hover {
+  background-color: #1b3146;
+}
+
 /* Table container */
 .tableContainer {
   display: flex;
@@ -77,6 +92,7 @@
   ); /* Ensure inputs fit within container */
   gap: 10px;
   align-items: center;
+  margin-bottom: 10px;
 }
 
 /* Table header */
@@ -95,10 +111,50 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   background-color: #fff;
-  color: #333;
+  color: #333 !important;
   font-size: 16px;
   text-align: center;
   width: 100%;
+}
+
+/* Ensure date/time input icons are visible in table rows */
+.tableRow input[type="date"], 
+.tableRow input[type="time"] {
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+.tableRow input[type="date"]::-webkit-calendar-picker-indicator,
+.tableRow input[type="time"]::-webkit-calendar-picker-indicator {
+  color: #333;
+  opacity: 1;
+  filter: invert(0.3);
+}
+
+/* Input styling for table grid */
+.tableGrid input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333 !important;
+  font-size: 16px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Ensure date/time input icons are visible */
+.tableGrid input[type="date"], 
+.tableGrid input[type="time"] {
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+.tableGrid input[type="date"]::-webkit-calendar-picker-indicator,
+.tableGrid input[type="time"]::-webkit-calendar-picker-indicator {
+  color: #333;
+  opacity: 1;
+  filter: invert(0.3);
 }
 
 /* Signature canvas styling */
@@ -144,30 +200,159 @@
 .addRowButton {
   background-color: #2f4a65;
   color: white;
-  padding: 10px;
+  padding: 12px 20px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   margin-top: 15px;
   align-self: center;
+  transition: background-color 0.2s;
 }
 
 .addRowButton:hover {
   background-color: #1b3146;
 }
 
+/* Mobile-specific row styling */
+.mobileRow {
+  display: none;
+}
+
 /* Responsive Styling */
 @media (max-width: 768px) {
-  .tableGrid {
-    grid-template-columns: repeat(
-      2,
-      minmax(150px, 1fr)
-    ); /* Adjust for smaller screens */
+  .container {
+    padding: 10px;
   }
-  
+
+  .heading {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  .patientInfo {
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  .patientInfo input {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  .patientInfo button {
+    width: 100%;
+    max-width: 300px;
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .tableContainer {
+    padding: 15px;
+  }
+
+  /* Hide desktop grid on mobile */
+  .tableGrid:not(.tableHeader) {
+    display: none;
+  }
+
+  /* Show mobile card layout */
+  .mobileRow {
+    display: block;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #fafafa;
+  }
+
+  .mobileRowField {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+
+  .mobileRowField:last-child {
+    margin-bottom: 0;
+  }
+
+  .mobileRowField label {
+    font-weight: bold;
+    color: #2f4a65;
+    margin-bottom: 5px;
+    font-size: 14px;
+  }
+
+  .mobileRowField input {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #fff;
+    color: #333 !important;
+  }
+
+  /* Ensure mobile date/time input icons are visible */
+  .mobileRowField input[type="date"], 
+  .mobileRowField input[type="time"] {
+    color: #333 !important;
+    -webkit-text-fill-color: #333 !important;
+  }
+
+  .mobileRowField input[type="date"]::-webkit-calendar-picker-indicator,
+  .mobileRowField input[type="time"]::-webkit-calendar-picker-indicator {
+    color: #333;
+    opacity: 1;
+    filter: invert(0.3);
+  }
+
   .signatureCanvas {
-    max-width: 150px;
-    height: 60px;
+    max-width: 100%;
+    width: 100%;
+    height: 100px;
+  }
+
+  .clearSignatureButton {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .addRowButton {
+    width: 100%;
+    max-width: 300px;
+    padding: 15px;
+    font-size: 16px;
+  }
+
+  /* Hide table header on mobile */
+  .tableHeader {
+    display: none;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+  .container {
+    padding: 5px;
+  }
+
+  .heading {
+    font-size: 16px;
+    padding: 0 10px;
+  }
+
+  .tableContainer {
+    padding: 10px;
+  }
+
+  .mobileRow {
+    padding: 12px;
+  }
+
+  .signatureCanvas {
+    height: 80px;
   }
 }
