@@ -10,17 +10,20 @@ type FormRow = {
     signature: string;
     evaluation: string;
     itp: string;
+    isSaved?: boolean; // Track if this row has been saved to database
 };
 
 // Signature Canvas Component
 const SignatureCanvas = ({
     value,
     onChange,
-    index
+    index,
+    disabled = false
 }: {
     value: string;
-    onChange: (index: number, field: keyof FormRow, value: string) => void;
+    onChange: (index: number, field: keyof FormRow, value: string | boolean) => void;
     index: number;
+    disabled?: boolean;
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
@@ -89,6 +92,7 @@ const SignatureCanvas = ({
     };
 
     const startDrawing = (pos: { x: number; y: number }) => {
+        if (disabled) return;
         setIsDrawing(true);
         setLastPos(pos);
     };
@@ -121,6 +125,7 @@ const SignatureCanvas = ({
     };
 
     const clearSignature = () => {
+        if (disabled) return;
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         if (!ctx || !canvas) return;
@@ -135,7 +140,7 @@ const SignatureCanvas = ({
         <div className={styles.signatureContainer}>
             <canvas
                 ref={canvasRef}
-                className={styles.signatureCanvas}
+                className={`${styles.signatureCanvas} ${disabled ? styles.signatureCanvasDisabled : ''}`}
                 onMouseDown={(e) => startDrawing(getMousePos(e))}
                 onMouseMove={(e) => draw(getMousePos(e))}
                 onMouseUp={stopDrawing}
@@ -153,20 +158,22 @@ const SignatureCanvas = ({
                     stopDrawing();
                 }}
             />
-            <button
-                type="button"
-                onClick={clearSignature}
-                className={styles.clearSignatureButton}
-            >
-                Clear
-            </button>
+            {!disabled && (
+                <button
+                    type="button"
+                    onClick={clearSignature}
+                    className={styles.clearSignatureButton}
+                >
+                    Clear
+                </button>
+            )}
         </div>
     );
 };
 
 export default function SignatureLog() {
     const [formData, setFormData] = useState<FormRow[]>([
-        { date: "", timeIn: "", timeOut: "", signature: "", evaluation: "", itp: "" },
+        { date: "", timeIn: "", timeOut: "", signature: "", evaluation: "", itp: "", isSaved: false },
     ]);
     const [patientName, setPatientName] = useState("");
     const [dob, setDob] = useState("");
@@ -198,9 +205,9 @@ export default function SignatureLog() {
         }
     }, []);
 
-    const handleChange = (index: number, field: keyof FormRow, value: string) => {
+    const handleChange = (index: number, field: keyof FormRow, value: string | boolean) => {
         const newFormData = [...formData];
-        newFormData[index][field] = value;
+        (newFormData[index] as any)[field] = value;
         setFormData(newFormData);
         setSelectedRowIndex(index);
     };
@@ -208,7 +215,7 @@ export default function SignatureLog() {
     const addRow = () => {
         setFormData([
             ...formData,
-            { date: "", timeIn: "", timeOut: "", signature: "", evaluation: "", itp: "" },
+            { date: "", timeIn: "", timeOut: "", signature: "", evaluation: "", itp: "", isSaved: false },
         ]);
     };
 
@@ -227,7 +234,12 @@ export default function SignatureLog() {
 
         const data = await res.json();
         if (res.ok) {
-            setFormData(data.entries || []);
+            // Mark all loaded entries as saved
+            const savedEntries = (data.entries || []).map((entry: FormRow) => ({
+                ...entry,
+                isSaved: true
+            }));
+            setFormData(savedEntries);
             setDob(plainDob); // Keep UI readable
             setStatusMsg(`Loaded patient record for ${plainName}`);
         } else {
@@ -239,24 +251,36 @@ export default function SignatureLog() {
         const hashedName = await hashString(patientName);
         const hashedDob = await hashString(dob);
 
-        const res = await fetch("/api/login/patient/replace", {
+        // Only send unsaved entries to be appended
+        const unsavedEntries = formData.filter(row => !row.isSaved);
+
+        if (unsavedEntries.length === 0) {
+            setStatusMsg("No new data to save");
+            return;
+        }
+
+        const res = await fetch("/api/login/patient/append", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 patientName: hashedName,
                 dob: hashedDob,
-                newEntries: formData,
+                newEntries: unsavedEntries,
             }),
         });
 
         const data = await res.json();
 
         if (res.ok) {
-            sessionStorage.setItem("patientName", patientName);
-            sessionStorage.setItem("dob", dob);
-            window.location.reload();
+            // Mark all entries as saved
+            const updatedFormData = formData.map(row => ({
+                ...row,
+                isSaved: true
+            }));
+            setFormData(updatedFormData);
+            setStatusMsg("Data saved successfully");
         } else {
-            setStatusMsg(data.message || "Failed to update data");
+            setStatusMsg(data.message || "Failed to save data");
         }
     };
 
@@ -298,47 +322,54 @@ export default function SignatureLog() {
                 {formData.map((row, index) => (
                     <div key={index}>
                         {/* Desktop/Tablet Grid Layout */}
-                        <div className={styles.tableGrid}>
+                        <div className={`${styles.tableGrid} ${row.isSaved ? styles.savedRow : ''}`}>
                             <input
                                 type="date"
                                 value={row.date}
                                 onChange={(e) => handleChange(index, "date", e.target.value)}
+                                disabled={row.isSaved}
                             />
                             <input
                                 type="time"
                                 value={row.timeIn}
                                 onChange={(e) => handleChange(index, "timeIn", e.target.value)}
+                                disabled={row.isSaved}
                             />
                             <input
                                 type="time"
                                 value={row.timeOut}
                                 onChange={(e) => handleChange(index, "timeOut", e.target.value)}
+                                disabled={row.isSaved}
                             />
                             <SignatureCanvas
                                 value={row.signature}
                                 onChange={handleChange}
                                 index={index}
+                                disabled={row.isSaved}
                             />
                             <input
                                 type="text"
                                 value={row.evaluation}
                                 onChange={(e) => handleChange(index, "evaluation", e.target.value)}
+                                disabled={row.isSaved}
                             />
                             <input
                                 type="text"
                                 value={row.itp}
                                 onChange={(e) => handleChange(index, "itp", e.target.value)}
+                                disabled={row.isSaved}
                             />
                         </div>
 
                         {/* Mobile Card Layout */}
-                        <div className={styles.mobileRow}>
+                        <div className={`${styles.mobileRow} ${row.isSaved ? styles.savedRow : ''}`}>
                             <div className={styles.mobileRowField}>
                                 <label>Date</label>
                                 <input
                                     type="date"
                                     value={row.date}
                                     onChange={(e) => handleChange(index, "date", e.target.value)}
+                                    disabled={row.isSaved}
                                 />
                             </div>
                             <div className={styles.mobileRowField}>
@@ -347,6 +378,7 @@ export default function SignatureLog() {
                                     type="time"
                                     value={row.timeIn}
                                     onChange={(e) => handleChange(index, "timeIn", e.target.value)}
+                                    disabled={row.isSaved}
                                 />
                             </div>
                             <div className={styles.mobileRowField}>
@@ -355,6 +387,7 @@ export default function SignatureLog() {
                                     type="time"
                                     value={row.timeOut}
                                     onChange={(e) => handleChange(index, "timeOut", e.target.value)}
+                                    disabled={row.isSaved}
                                 />
                             </div>
                             <div className={styles.mobileRowField}>
@@ -363,6 +396,7 @@ export default function SignatureLog() {
                                     value={row.signature}
                                     onChange={handleChange}
                                     index={index}
+                                    disabled={row.isSaved}
                                 />
                             </div>
                             <div className={styles.mobileRowField}>
@@ -371,6 +405,7 @@ export default function SignatureLog() {
                                     type="text"
                                     value={row.evaluation}
                                     onChange={(e) => handleChange(index, "evaluation", e.target.value)}
+                                    disabled={row.isSaved}
                                 />
                             </div>
                             <div className={styles.mobileRowField}>
@@ -379,6 +414,7 @@ export default function SignatureLog() {
                                     type="text"
                                     value={row.itp}
                                     onChange={(e) => handleChange(index, "itp", e.target.value)}
+                                    disabled={row.isSaved}
                                 />
                             </div>
                         </div>
@@ -389,7 +425,7 @@ export default function SignatureLog() {
                     + Add Row
                 </button>
                 <button onClick={appendData} className={styles.addRowButton}>
-                    Append Data
+                    Save Data
                 </button>
             </div>
 
