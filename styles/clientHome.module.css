@@ -101,6 +101,45 @@
   width: 100%;
 }
 
+/* Signature canvas styling */
+.signatureContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+
+.signatureCanvas {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+  cursor: crosshair;
+  touch-action: none;
+  width: 100%;
+  max-width: 200px;
+  height: 80px;
+}
+
+.signatureCanvas:hover {
+  border-color: #2f4a65;
+}
+
+.clearSignatureButton {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.clearSignatureButton:hover {
+  background-color: #c82333;
+}
+
 /* Add row button */
 .addRowButton {
   background-color: #2f4a65;
@@ -125,5 +164,10 @@
       2,
       minmax(150px, 1fr)
     ); /* Adjust for smaller screens */
+  }
+  
+  .signatureCanvas {
+    max-width: 150px;
+    height: 60px;
   }
 }

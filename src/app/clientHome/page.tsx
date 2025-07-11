@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styles from "/styles/clientHome.module.css";
 
 type FormRow = {
@@ -10,6 +10,158 @@ type FormRow = {
     signature: string;
     evaluation: string;
     itp: string;
+};
+
+// Signature Canvas Component
+const SignatureCanvas = ({
+    value,
+    onChange,
+    index
+}: {
+    value: string;
+    onChange: (index: number, field: keyof FormRow, value: string) => void;
+    index: number;
+}) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [lastPos, setLastPos] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Get the actual displayed size of the canvas
+        const rect = canvas.getBoundingClientRect();
+        const displayWidth = rect.width;
+        const displayHeight = rect.height;
+
+        // Set canvas internal size to match display size
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+
+        // Set drawing styles
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Clear canvas with white background
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Load existing signature if any
+        if (value && value.startsWith('data:image')) {
+            const img = new Image();
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = value;
+        }
+    }, [value]);
+
+    const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    };
+
+    const getTouchPos = (e: React.TouchEvent<HTMLCanvasElement>) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        return {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        };
+    };
+
+    const startDrawing = (pos: { x: number; y: number }) => {
+        setIsDrawing(true);
+        setLastPos(pos);
+    };
+
+    const draw = (pos: { x: number; y: number }) => {
+        if (!isDrawing) return;
+
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (!ctx) return;
+
+        ctx.beginPath();
+        ctx.moveTo(lastPos.x, lastPos.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+
+        setLastPos(pos);
+    };
+
+    const stopDrawing = () => {
+        if (!isDrawing) return;
+        setIsDrawing(false);
+
+        // Save the signature as base64
+        const canvas = canvasRef.current;
+        if (canvas) {
+            const dataURL = canvas.toDataURL('image/png');
+            onChange(index, 'signature', dataURL);
+        }
+    };
+
+    const clearSignature = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (!ctx || !canvas) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        onChange(index, 'signature', '');
+    };
+
+    return (
+        <div className={styles.signatureContainer}>
+            <canvas
+                ref={canvasRef}
+                className={styles.signatureCanvas}
+                onMouseDown={(e) => startDrawing(getMousePos(e))}
+                onMouseMove={(e) => draw(getMousePos(e))}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                onTouchStart={(e) => {
+                    e.preventDefault();
+                    startDrawing(getTouchPos(e));
+                }}
+                onTouchMove={(e) => {
+                    e.preventDefault();
+                    draw(getTouchPos(e));
+                }}
+                onTouchEnd={(e) => {
+                    e.preventDefault();
+                    stopDrawing();
+                }}
+            />
+            <button
+                type="button"
+                onClick={clearSignature}
+                className={styles.clearSignatureButton}
+            >
+                Clear
+            </button>
+        </div>
+    );
 };
 
 export default function SignatureLog() {
@@ -160,10 +312,10 @@ export default function SignatureLog() {
                             value={row.timeOut}
                             onChange={(e) => handleChange(index, "timeOut", e.target.value)}
                         />
-                        <input
-                            type="text"
+                        <SignatureCanvas
                             value={row.signature}
-                            onChange={(e) => handleChange(index, "signature", e.target.value)}
+                            onChange={handleChange}
+                            index={index}
                         />
                         <input
                             type="text"
